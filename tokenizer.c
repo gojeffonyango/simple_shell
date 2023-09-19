@@ -1,36 +1,32 @@
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include "shell.h"
 
-#define MAX_INPUT_SIZE 1024
-#define MAX_ARG_COUNT 32
 
-/**
- * programme that will be used to read the symbols and help in execution of the file
- * parsing will also be included
- */
-int tokenize_input(char *input, char *args[])
-	int tokenize_input(char *input, char *args[]) {
-    char *token = strtok(input, " ");
-    int arg_count = 0;
-
-    while (token != NULL && arg_count < MAX_ARG_COUNT) {
-        args[arg_count] = token;
-        arg_count++;
-        token = strtok(NULL, " ");
+char **tokenize_input(char *input, const char *delim) {
+    char **tokens = malloc(sizeof(char *) * MAX_INPUT_SIZE);
+    if (tokens == NULL) {
+        perror("Memory allocation error");
+        exit(EXIT_FAILURE);
     }
 
-    args[arg_count] = NULL;
+    char *token;
+    int token_count = 0;
+    char *saveptr;
 
-    if (args[0] != NULL) {
-        if (strcmp(args[0], "mycommand") == 0) {
-            if (arg_count < 2) {
-                fprintf(stderr, "Usage: mycommand <argument>\n");
-                return -1;
+    for (token = custom_strtok(input, delim, &saveptr); token
+		    != NULL; token = custom_strtok(NULL, delim, &saveptr)) {
+        trim_whitespace(token);
+        if (strlen(token) > 0) {
+            tokens[token_count] = strdup(token);
+            if (tokens[token_count] == NULL) {
+                perror("Memory allocation error");
+                exit(EXIT_FAILURE);
             }
+            token_count++;
         }
     }
 
-    return arg_count;
+    tokens[token_count] = NULL;
+    return tokens;
 }
+
