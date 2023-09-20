@@ -9,4 +9,11 @@
 #include <sys/wait.h>
 #include <fcntl.h>
 
-#endif
+#define MAX_INPUT_SIZE 1024
+
+void execute_command(char **args);
+char **tokenize_input(char *input, const char *delim);
+char *custom_strtok(char *str, const char *delim, char **saveptr);
+void trim_whitespace(char *str);
+
+#endif /* SHELL_H */

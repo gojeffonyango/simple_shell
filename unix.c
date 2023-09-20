@@ -4,59 +4,34 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include "shell.h"
 
 #define MAX_INPUT_SIZE 1024
 
-void execute_command(char *command)
-{
-	char *args[MAX_INPUT_SIZE / 2];
-	int arg_count = 0;
-	char *token = strtok(command, " \n");
-	pid_t pid = fork();
-
-	while (token != NULL)
-	{
-		args[arg_count++] = token;
-		token = strtok(NULL, " \n");
-	}
-	args[arg_count] = NULL;
-	if (arg_count > 0)
-	{
-		if (pid < 0)
-		{
-			perror("Fork failed");
-		}
-		else if (pid == 0)
-		{
-			if (execvp(args[0], args) == -1)
-			{
-				perror("Execution failed");
-			}
-			exit(EXIT_FAILURE);
-		}
-		else
-		{
-			wait(NULL);
-		}
-	}
-}
 int main()
 {
-	char input[MAX_INPUT_SIZE];
+	char *delim = " \n";
+	char *input = NULL;
+	char **tokens;
+	int i;
 
 	while (1)
 	{
 		printf(":) ");
-		if (fgets(input, sizeof(input), stdin) == NULL)
+
+		if (input == NULL || strcmp(input, "exit") == 0)
 		{
-			break;
+		free(input);
+		break;
 		}
-		input[strlen(input) - 1] = '\0';
-		if (strcmp(input, "exit") == 0)
+		tokens = tokenize_input(input, delim);
+		execute_command(tokens);
+		free(input);
+		for (i = 0; tokens[i] != NULL; i++)
 		{
-			break;
+		free(tokens[i]);
 		}
-		execute_command(input);
+		free(tokens);
 	}
 	return (0);
 }
